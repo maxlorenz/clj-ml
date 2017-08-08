@@ -2,6 +2,7 @@
   (:use [clj-ml.data] :reload-all)
   (:use [clojure.test]))
 
+;; TODO Tests run forever...
 (deftest make-instance-num
   (let [dataset (make-dataset :test
                               [:a :b]

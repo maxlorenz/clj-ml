@@ -41,7 +41,7 @@
     (is (= (aget options 5)
            "-M"))
     (is (= (aget options 6)
-           "0.0010"))
+           "0.001"))
     (is (= (aget options 7)
            "-S"))
     (is (= (aget options 8)

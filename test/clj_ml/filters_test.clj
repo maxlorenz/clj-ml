@@ -19,7 +19,7 @@
 
 (deftest make-filter-options-unsupervised-discretize
   (let [options (make-filter-options :unsupervised-discretize {:attributes [1 2] :binary true :better-encoding true
-                                                               :better-encoding true :equal-frequency true :optimize true
+                                                               :equal-frequency true :optimize true
                                                                :number-bins 4 :weight-bins 1})]
     (is (= (aget options 0)
            "-R"))
@@ -112,7 +112,7 @@
            (class f)))
     (let [res (filter-apply f ds)]
       (is (= (dataset-format res)
-             [:b {:c '(:m :g)}])))))
+             [:b {:c '(:g :m)}])))))
 
 (deftest make-apply-filter-remove-attributes
   (let [ds (clj-ml.data/make-dataset :test [:a :b {:c [:g :m]}]
@@ -121,4 +121,4 @@
                                        [4 5 :g]])
         res (make-apply-filter :remove-attributes {:attributes [0]} ds)]
     (is (= (dataset-format res)
-           [:b {:c '(:m :g)}]))))
+           [:b {:c '(:g :m)}]))))

@@ -4,7 +4,7 @@
 ;;
 
 (ns #^{:author "Antonio Garrote <antoniogarrote@gmail.com>"}
-  clj-ml.data
+      clj-ml.data
   "This namespace contains several functions for
    building creating and manipulating data sets and instances. The formats of
    these data sets as well as their classes can be modified and assigned to
@@ -45,7 +45,7 @@
         (throw (.Exception (str "Attribute " attrs " not found")))
         (if (= attrs (attribute-name-at dataset-or-instance c))
           c
-          (recur (+ c 1 )))))))
+          (recur (+ c 1)))))))
 
 (defn dataset-index-attr [dataset attr]
   (index-attr dataset attr))
@@ -53,99 +53,97 @@
 (defn instance-index-attr [instance attr]
   (index-attr instance attr))
 
-
 (defn make-instance
   "Creates a new dataset instance from a vector"
   ([dataset vector]
-     (make-instance dataset 1 vector))
+   (make-instance dataset 1 vector))
   ([dataset weight vector]
-     (let [inst (new Instance
-                     (count vector))]
-       (do (.setDataset inst dataset)
-           (loop [vs vector
-                  c 0]
-             (if (empty? vs)
-               (do
-                 (.setWeight inst (double weight))
-                 inst)
-               (do
-                 (if (or (keyword? (first vs)) (string? (first vs)))
+   (let [inst (new Instance
+                   (count vector))]
+     (do (.setDataset inst dataset)
+         (loop [vs vector
+                c 0]
+           (if (empty? vs)
+             (do
+               (.setWeight inst (double weight))
+               inst)
+             (do
+               (if (or (keyword? (first vs)) (string? (first vs)))
                    ;; this is a nominal entry in keyword or string form
-                   (.setValue inst c (key-to-str (first vs)))
-                   (if (sequential? (first vs))
+                 (.setValue inst c (key-to-str (first vs)))
+                 (if (sequential? (first vs))
                      ;; this is a map of values
-                     (let [k (key-to-str (nth (first vs) 0))
-                           val (nth (first vs) 1)
-                           ik  (index-attr inst k)]
-                       (if (or (keyword? val) (string? val))
+                   (let [k (key-to-str (nth (first vs) 0))
+                         val (nth (first vs) 1)
+                         ik  (index-attr inst k)]
+                     (if (or (keyword? val) (string? val))
                          ;; this is a nominal entry in keyword or string form
-                         (.setValue inst ik (key-to-str val))
-                         (.setValue inst ik (double val))))
+                       (.setValue inst ik (key-to-str val))
+                       (.setValue inst ik (double val))))
                      ;; A double value for the entry
-                     (.setValue inst c (double (first vs)))))
-                 (recur (rest vs)
-                        (+ c 1)))))))))
-
+                   (.setValue inst c (double (first vs)))))
+               (recur (rest vs)
+                      (+ c 1)))))))))
 
 (defn- parse-attributes
   "Builds a set of attributes for a dataset parsed from the given array"
   ([attributes]
-     (loop [atts attributes
-            fv (new FastVector (count attributes))]
-       (if (empty? atts)
-         fv
-         (do
-           (let [att (first atts)]
-             (.addElement fv
-                          (if (map? att)
-                            (if (sequential? (first (vals att)))
-                              (let [v (first (vals att))
-                                    vfa (reduce (fn [a i] (.addElement a (key-to-str i)) a)
-                                                (new FastVector) v)]
-                                (new Attribute (key-to-str (first (keys att))) vfa))
-                              (new Attribute (key-to-str (first (keys att))) (first (vals att))))
-                            (new Attribute (key-to-str att)))))
-           (recur (rest atts)
-                  fv))))))
+   (loop [atts attributes
+          fv (new FastVector (count attributes))]
+     (if (empty? atts)
+       fv
+       (do
+         (let [att (first atts)]
+           (.addElement fv
+                        (if (map? att)
+                          (if (sequential? (first (vals att)))
+                            (let [v (first (vals att))
+                                  vfa (reduce (fn [a i] (.addElement a (key-to-str i)) a)
+                                              (new FastVector) v)]
+                              (new Attribute (key-to-str (first (keys att))) vfa))
+                            (new Attribute (key-to-str (first (keys att))) (first (vals att))))
+                          (new Attribute (key-to-str att)))))
+         (recur (rest atts)
+                fv))))))
 
 (defn make-dataset
   "Creates a new dataset, empty or with the provided instances and options"
   ([name attributes capacity-or-values & opts]
-     (let [options (first-or-default opts {})
-           weight (get options :weight 1)
-           class-attribute (get options :class)
-           ds (if (sequential? capacity-or-values)
-                ;; we have received a sequence instead of a number, so we initialize data
-                ;; instances in the dataset
-                (let [dataset (new ClojureInstances (key-to-str name) (parse-attributes attributes) (count capacity-or-values))]
-                  (loop [vs capacity-or-values]
-                    (if (empty? vs)
-                      dataset
-                      (do
-                        (let [inst (make-instance dataset weight (first vs))]
-                          (.add dataset inst))
-                        (recur (rest vs))))))
-                ;; we haven't received a vector so we create an empty dataset
-                (new Instances (key-to-str name) (parse-attributes attributes) capacity-or-values))]
+   (let [options         (first-or-default opts {})
+         weight          (get options :weight 1)
+         class-attribute (get options :class)
+         ds              (if (sequential? capacity-or-values)
+                           ;; we have received a sequence instead of a number, so we initialize data
+                           ;; instances in the dataset
+                           (let [dataset (new ClojureInstances (key-to-str name) (parse-attributes attributes) (count capacity-or-values))]
+                             (loop [vs capacity-or-values]
+                               (if (empty? vs)
+                                 dataset
+                                 (do
+                                   (let [inst (make-instance dataset weight (first vs))]
+                                     (.add dataset inst))
+                                   (recur (rest vs))))))
+                           ;; we haven't received a vector so we create an empty dataset
+                           (new Instances (key-to-str name) (parse-attributes attributes) capacity-or-values))]
        ;; we try to setup the class attribute if :class with a attribute name or
        ;; integer value is provided
-       (when (not (nil? class-attribute))
-         (let [index-class-attribute (if (keyword? class-attribute)
-                                       (loop [c 0
-                                              acum attributes]
-                                           (if (= (let [at (first acum)]
-                                                        (if (map? at)
-                                                          (first (keys at))
-                                                          at))
-                                                  class-attribute)
-                                             c
-                                             (if (= c (count attributes))
-                                               (throw (new Exception "provided class attribute not found"))
-                                               (recur (+ c 1)
-                                                      (rest acum)))))
-                                           class-attribute)]
-           (.setClassIndex ds index-class-attribute)))
-       ds)))
+     (when (not (nil? class-attribute))
+       (let [index-class-attribute (if (keyword? class-attribute)
+                                     (loop [c    0
+                                            acum attributes]
+                                       (if (= (let [at (first acum)]
+                                                (if (map? at)
+                                                  (first (keys at))
+                                                  at))
+                                              class-attribute)
+                                         c
+                                         (if (= c (count attributes))
+                                           (throw (new Exception "provided class attribute not found"))
+                                           (recur (+ c 1)
+                                                  (rest acum)))))
+                                     class-attribute)]
+         (.setClassIndex ds index-class-attribute)))
+     ds)))
 
 ;; dataset information
 
@@ -249,8 +247,7 @@
         acum
         (recur (+ c 1)
                (conj acum {(keyword (. (.attribute instance c) name))
-                           (instance-value-at instance c)} ))))))
-
+                           (instance-value-at instance c)}))))))
 
 ;; manipulation of datasets
 
@@ -280,14 +277,14 @@
   "Adds a new instance to a dataset. A clojure vector or an Instance
    can be passed as arguments"
   ([dataset vector]
-     (dataset-add dataset 1 vector))
+   (dataset-add dataset 1 vector))
   ([dataset weight vector]
-     (do
-       (if (= (class vector) weka.core.Instance)
-         (.add dataset vector)
-         (let [instance (make-instance dataset weight vector)]
-           (.add dataset instance)))
-       dataset)))
+   (do
+     (if (= (class vector) weka.core.Instance)
+       (.add dataset vector)
+       (let [instance (make-instance dataset weight vector)]
+         (.add dataset instance)))
+     dataset)))
 
 (defn dataset-extract-at
   "Removes and returns the instance at a certain position from the dataset"
